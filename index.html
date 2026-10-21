@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>iPhone UI Simulator</title>
+<style>
+:root{--ink:#111318;--muted:#8b8d96;--glass:rgba(255,255,255,.22);--line:rgba(255,255,255,.28);--yellow:#fee500;--iosblue:#087cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Apple SD Gothic Neo",Arial,sans-serif;color:#fff;overflow:hidden;background:#151923}
+button,input{font:inherit}
+button{border:0;cursor:pointer}
+#phone{position:relative;width:100vw;height:100dvh;max-width:430px;max-height:932px;margin:auto;overflow:hidden;background:#202838}
+.wallpaper{position:absolute;inset:0;background-size:cover;background-position:center;transition:filter .25s}
+.wallpaper:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.06) 45%,rgba(0,0,0,.26))}
+#lockscreen{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;padding:65px 24px 22px;transition:transform .45s ease,opacity .35s}
+.lock-date{font-size:16px;font-weight:600;letter-spacing:.2px;text-shadow:0 2px 12px #0005}
+.lock-time{font-size:clamp(76px,23vw,104px);font-weight:200;letter-spacing:-5px;line-height:1.1;text-shadow:0 2px 20px #0003}
+.lock-bottom{margin-top:auto;width:100%;display:flex;align-items:center;justify-content:space-between}
+.lock-circle{width:48px;height:48px;border-radius:50%;background:rgba(30,30,35,.28);backdrop-filter:blur(18px);display:grid;place-items:center;font-size:21px;border:1px solid #ffffff28}
+.swipe-hint{position:absolute;bottom:33px;font-size:12px;color:#ffffffc9;letter-spacing:.2px}
+.home-indicator{position:absolute;z-index:50;bottom:8px;left:50%;transform:translateX(-50%);width:108px;height:5px;border-radius:10px;background:#fff;cursor:pointer;box-shadow:0 1px 5px #0002}
+#home{position:absolute;inset:0;z-index:2;padding:57px 18px 38px;display:none;overflow:auto;scrollbar-width:none}
+#home::-webkit-scrollbar{display:none}
+.widgets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.widget{height:145px;border:1px solid var(--line);background:rgba(255,255,255,.19);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);border-radius:25px;padding:15px;box-shadow:0 8px 30px #00000010}
+.widget-label{font-size:12px;font-weight:700;color:#ffffffd9;margin-bottom:12px}
+.weather-place{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weather-temp{font-size:35px;line-height:1.12;font-weight:300;letter-spacing:-1px;margin:3px 0}
+.weather-desc{font-size:12px}
+.weather-hilo{font-size:11px;color:#ffffffd8;margin-top:5px}
+.weather-icon{float:right;font-size:25px;margin-top:-1px}
+.event{display:flex;gap:8px;margin:9px 0 0;font-size:11px;line-height:1.25}
+.event-time{min-width:37px;color:#ffffffc9}
+.event-title{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 10px;margin-top:30px}
+.app{background:transparent;color:#fff;display:flex;align-items:center;flex-direction:column;gap:6px;min-width:0;padding:0}
+.app-icon{width:min(16vw,62px);height:min(16vw,62px);max-width:62px;max-height:62px;border-radius:17px;display:grid;place-items:center;font-size:30px;box-shadow:0 5px 14px #0002;position:relative;overflow:hidden}
+.app-name{font-size:11px;font-weight:500;text-shadow:0 1px 5px #0008;white-space:nowrap}
+.phone-icon{background:linear-gradient(145deg,#63e77b,#12bd62)}
+.kakao-icon{background:#fee500;color:#211f16;font-size:27px}
+.message-icon{background:linear-gradient(145deg,#71e889,#27c85b);color:white}
+.camera-icon{background:linear-gradient(145deg,#f8f8f8,#c7cbd0);color:#3a3d43}
+.twitter-icon{background:#111;color:white;font-weight:800;font-size:34px}
+.youtube-icon{background:#ff0033;color:#fff;font-size:26px}
+.spotify-icon{background:#1ed760;color:#071a0e}
+.instagram-icon{background:radial-gradient(circle at 30% 105%,#ffd776 0,#ff7a36 30%,#e1306c 55%,#833ab4 78%,#405de6 100%);color:white}
+.photos-icon{background:rgba(255,255,255,.93);color:#ff4f8b}
+.notes-icon{background:linear-gradient(#fff 0 25%,#ffe56a 25%);color:#8e6a00}
+.maps-icon{background:linear-gradient(135deg,#a5d6a7,#e9f4df 50%,#81b6ed);color:#24804b}
+.settings-icon{background:linear-gradient(145deg,#b7bdc6,#737b88);color:white}
+.dock{position:absolute;left:13px;right:13px;bottom:24px;height:88px;border:1px solid #ffffff30;border-radius:29px;background:rgba(255,255,255,.22);backdrop-filter:blur(28px);display:flex;align-items:center;justify-content:space-evenly}
+.dock .app-icon{width:55px;height:55px;border-radius:16px}
+#appview{position:absolute;inset:0;z-index:20;display:none;background:#f7f7fa;color:#17181c;overflow:hidden}
+.app-header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:17px;font-weight:700;background:rgba(248,248,250,.93);border-bottom:1px solid #0000000a}
+.header-action{color:var(--iosblue);background:transparent;font-size:15px;font-weight:500;padding:6px}
+.app-content{height:calc(100% - 91px);overflow:auto;padding-bottom:22px;overscroll-behavior:contain}
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(248,248,250,.96)}
+.tabbar .home-indicator{position:static;transform:none;background:#111;width:108px;height:5px}
+.phone-screen{background:#fff}
+.phone-screen .app-header{padding-top:7px;height:64px;align-items:flex-end;padding-bottom:12px}
+.phone-title{font-size:29px;letter-spacing:-1px;font-weight:750}
+.call-group-title{font-size:13px;color:#7a7c83;font-weight:600;padding:17px 17px 7px}
+.call-row{min-height:65px;display:flex;align-items:center;padding:10px 17px;border-bottom:1px solid #f0f0f2;gap:12px}
+.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:linear-gradient(135deg,#d9e7ff,#9bbcf3);font-size:18px;color:#fff;font-weight:700}
+.call-info{min-width:0;flex:1}
+.call-name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.call-name.missed{color:#ff3b30}
+.call-sub{font-size:12px;color:#8c8c92;margin-top:3px}
+.call-time{font-size:13px;color:#8c8c92;white-space:nowrap}
+.call-tabs{position:absolute;bottom:38px;height:58px;background:#fff;border-top:1px solid #ececf0;left:0;right:0;display:flex;justify-content:space-around;align-items:center}
+.call-tab{background:none;color:#8b8d95;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center}
+.call-tab span:first-child{font-size:19px}
+.call-tab.active{color:var(--iosblue)}
+.kakao-screen{background:#f8f8f8}
+.kakao-screen .app-header{background:#f8f8f8}
+.kakao-title{font-size:23px;font-weight:800}
+.kakao-section{padding:16px 16px 7px;font-size:13px;font-weight:700;color:#777}
+.friend-row{height:67px;display:flex;align-items:center;gap:12px;padding:8px 16px;background:transparent;width:100%;text-align:left;color:#202127}
+.friend-row:active{background:#ececef}
+.friend-avatar{width:46px;height:46px;border-radius:17px;background:linear-gradient(145deg,#ffe9a8,#e7b77c);display:grid;place-items:center;font-size:23px;overflow:hidden}
+.friend-name{font-size:15px;font-weight:600}
+.friend-status{font-size:12px;color:#999;margin-top:4px}
+.kakao-divider{height:1px;background:#e9e9e9;margin:8px 16px}
+.chat-screen{position:absolute;inset:0;background:#abc4d9;display:flex;flex-direction:column}
+.chat-top{height:60px;display:flex;align-items:center;gap:12px;padding:0 14px;background:#f8f8f8;flex-shrink:0}
+.chat-top button{background:none;font-size:22px}
+.chat-top-name{font-size:17px;font-weight:700;flex:1}
+.chat-messages{flex:1;overflow:auto;padding:17px 13px 10px;display:flex;flex-direction:column;gap:13px}
+.date-pill{align-self:center;background:#8299aa80;color:white;font-size:11px;padding:5px 10px;border-radius:14px;margin:3px 0 7px}
+.chat-line{display:flex;align-items:flex-end;justify-content:flex-end;gap:5px}
+.chat-time{font-size:10px;color:#52677a;white-space:nowrap}
+.unread{font-size:10px;color:#d79b00}
+.bubble{background:var(--yellow);padding:10px 12px;border-radius:15px 3px 15px 15px;max-width:78%;font-size:14px;line-height:1.4;overflow-wrap:anywhere;box-shadow:0 1px 2px #0000000a}
+.chat-compose{height:57px;background:#f8f8f8;display:flex;align-items:center;gap:8px;padding:7px 10px;flex-shrink:0}
+.chat-compose input{flex:1;min-width:0;border:0;background:#fff;border-radius:20px;padding:11px 14px;outline:none;font-size:14px}
+.send-btn{background:#fee500;color:#292929;font-size:13px;font-weight:700;padding:11px 13px;border-radius:18px}
+.profile-screen{position:absolute;inset:0;background:#fff;z-index:3;display:flex;flex-direction:column}
+.profile-cover{height:34%;background:linear-gradient(145deg,#d6e6ed,#e8d8d1 55%,#b6cbd5);position:relative;flex-shrink:0}
+.profile-cover:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 35%,#fff7 0,transparent 33%)}
+.profile-back{position:absolute;top:15px;left:13px;background:#0004;color:#fff;border-radius:50%;width:37px;height:37px;z-index:1;font-size:22px}
+.profile-details{padding:0 22px;position:relative;flex:1;overflow:auto}
+.profile-big-avatar{width:94px;height:94px;border:4px solid #fff;border-radius:50%;background:linear-gradient(135deg,#ffe7a3,#e2b27a);display:grid;place-items:center;font-size:44px;margin-top:-47px;position:relative}
+.profile-name{font-size:22px;font-weight:800;margin-top:13px}
+.profile-id{font-size:13px;color:#8c8c92;margin-top:3px}
+.profile-status{font-size:14px;margin-top:20px;color:#4d4e53}
+.profile-edit{margin-top:25px;border:1px solid #dedee2;border-radius:22px;padding:9px 17px;background:white;font-weight:700}
+.twitter-screen{background:#000;color:#f7f9f9}
+.twitter-screen .app-header{background:#000;color:#f7f9f9;border-bottom:1px solid #222}
+.twitter-screen .app-content{height:calc(100% - 91px);background:#000}
+.twitter-backdrop{height:155px;background:linear-gradient(125deg,#243746,#111d2c 55%,#35424d)}
+.twitter-profile{padding:0 15px 15px;border-bottom:1px solid #2f3336;position:relative}
+.twitter-avatar{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#c6d6e0,#6e8999);border:4px solid #000;display:grid;place-items:center;font-size:35px;margin-top:-39px;position:relative}
+.twitter-follow{position:absolute;right:15px;top:12px;border-radius:22px;padding:8px 16px;font-size:13px;font-weight:800;background:#eff3f4;color:#0f1419}
+.twitter-name{font-size:20px;font-weight:800;margin-top:8px}
+.twitter-handle{font-size:14px;color:#71767b;margin-top:2px}
+.private-tag{font-size:13px;color:#aab0b5;margin-left:4px}
+.twitter-bio{font-size:14px;color:#d6d9db;margin-top:13px;line-height:1.4}
+.twitter-stats{display:flex;gap:16px;margin-top:13px;font-size:13px;color:#71767b}
+.twitter-stats b{color:#f7f9f9}
+.tweet{display:flex;gap:11px;padding:14px 14px 12px;border-bottom:1px solid #2f3336}
+.tweet-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#c6d6e0,#6e8999);display:grid;place-items:center;flex-shrink:0;font-size:20px}
+.tweet-body{flex:1;min-width:0}
+.tweet-meta{font-size:13px;color:#71767b;line-height:1.45}
+.tweet-meta b{font-size:14px;color:#f7f9f9}
+.tweet-text{font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px}
+.tweet-actions{display:flex;justify-content:space-between;color:#71767b;font-size:12px;margin-top:12px;max-width:310px}
+.simple-screen{height:100%;position:relative;background:#f4f4f7;color:#17181c}
+.simple-screen.dark{background:#090909;color:#fff}
+.simple-screen.dark .app-header{background:#090909;color:#fff;border-color:#222}
+.simple-list{padding:12px}
+.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:11px;box-shadow:0 2px 12px #0000000b}
+.dark .card{background:#181818;box-shadow:none}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.muted{color:#85878e;font-size:12px;margin-top:4px}
+.thumb{width:96px;height:58px;border-radius:10px;background:linear-gradient(135deg,#6846ff,#ff4e83);display:grid;place-items:center;color:#fff;font-size:25px;flex-shrink:0}
+.round-action{width:48px;height:48px;border-radius:50%;background:#fff;color:#111;font-size:20px}
+.music-cover{height:255px;margin:24px;border-radius:22px;background:linear-gradient(145deg,#ff8b4b,#7b3cff);display:grid;place-items:center;font-size:80px;box-shadow:0 20px 50px #0008}
+.music-controls{display:flex;justify-content:center;align-items:center;gap:30px;margin-top:30px}
+.social-photo{height:255px;background:linear-gradient(145deg,#ffd47b,#ff7898 50%,#8067e8);display:grid;place-items:center;font-size:72px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:3px}
+.photo-tile{aspect-ratio:1;border:0;font-size:32px;background:linear-gradient(145deg,#d7ecff,#ffd9e3)}
+.note-editor{width:100%;min-height:260px;border:0;background:#fff7c9;border-radius:16px;padding:16px;resize:none;outline:none;line-height:1.55}
+.map-canvas{height:100%;position:relative;background:linear-gradient(25deg,transparent 47%,#fff 48% 52%,transparent 53%),linear-gradient(115deg,#cfeac8 0 30%,#cfe3f8 31% 48%,#eadfbd 49% 100%);background-size:85px 85px}
+.map-pin{position:absolute;left:54%;top:43%;font-size:42px;filter:drop-shadow(0 4px 3px #0004)}
+.settings-group{background:#fff;border-radius:14px;margin:14px;overflow:hidden}
+.setting-row{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 14px;border-bottom:1px solid #ededf0}
+.setting-row:last-child{border-bottom:0}
+.setting-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#2f80ed;color:#fff}
+.switch{width:50px;height:30px;border-radius:20px;background:#c9c9ce;padding:3px;transition:.2s}
+.switch:after{content:"";display:block;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004;transition:.2s}
+.switch.on{background:#34c759}.switch.on:after{transform:translateX(20px)}
+.message-bubble{max-width:78%;padding:10px 13px;border-radius:17px;background:#e7e7eb;margin:8px 14px}
+.message-bubble.mine{margin-left:auto;background:#34c759;color:#fff}
+.camera-screen{height:100%;background:#070707;color:#fff;display:flex;flex-direction:column}
+.viewfinder{flex:1;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#53616e,#1a2027 58%,#050505);font-size:72px;position:relative}
+.viewfinder:after{content:"";position:absolute;inset:12%;border:1px solid #ffffff38}
+.camera-controls{height:126px;display:flex;align-items:center;justify-content:space-around;background:#050505}
+.shutter{width:70px;height:70px;border-radius:50%;background:#fff;border:5px solid #333}
+.toast{position:absolute;z-index:60;bottom:58px;left:50%;transform:translateX(-50%);background:#202126dd;color:white;padding:9px 14px;border-radius:18px;font-size:12px;white-space:nowrap;display:none}
+@media(min-width:500px){body{display:grid;place-items:center;background:#e9ebef}#phone{height:min(932px,96dvh);width:min(430px,96vw);border-radius:42px;box-shadow:0 25px 80px #1114;border:7px solid #17191e}.home-indicator{bottom:8px}}
+</style>
+</head>
+<body>
+<div id="phone">
+  <div class="wallpaper" id="wallpaper"></div>
+  <section id="lockscreen" aria-label="잠금 화면">
+    <div class="lock-date" id="lockDate"></div>
+    <div class="lock-time" id="lockTime">09:41</div>
+    <div class="lock-bottom"><div class="lock-circle">🔦</div><div class="lock-circle">◉</div></div>
+    <div class="swipe-hint">위로 쓸어올려 잠금 해제</div>
+  </section>
+  <main id="home">
+    <div class="widgets">
+      <div class="widget">
+        <div class="widget-label">날씨 <span style="float:right">⌁</span></div>
+        <div class="weather-place" id="weatherPlace">서울</div><span class="weather-icon" id="weatherIcon">☀️</span>
+        <div class="weather-temp" id="weatherTemp">23°</div><div class="weather-desc" id="weatherDesc">맑음</div>
+        <div class="weather-hilo" id="weatherHilo">최고 25° · 최저 18°</div>
+      </div>
+      <div class="widget">
+        <div class="widget-label">오늘의 일정 <span style="float:right">▦</span></div>
+        <div id="eventsList"></div>
+      </div>
+    </div>
+    <div class="app-grid" id="appGrid"></div>
+    <div class="dock" id="dock"></div>
+  </main>
+  <section id="appview"></section>
+  <div class="home-indicator" id="globalHome" title="홈으로"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+// ==================== CONFIG: 아래 내용만 수정하세요 ====================
+const CONFIG = {
+  wallpaper: "hanjin.jpg", // 이미지 URL 또는 data:image/...;base64,... (비우면 기본 배경)
+  userName: "이경민",
+  contactName: "한쩐♡",
+  weather: { place: "서울", temp: "15°", desc: "맑음", high: "25°", low: "18°" },
+  events: [
+    { time: "10:00", title: "춤 연습" },
+    { time: "19:30", title: "해디라오 데이트" }
+  ],
+  calls: [
+    { group: "오늘", items: [
+      { type: "발", time: "오전 7:30", count: "64" },
+      { type: "미수신", time: "오전 10:16", count: "2" }
+    ]},
+    { group: "어제", items: [
+      { type: "수신", time: "오후 9:18", count: "6" },
+      { type: "발", time: "오후 6:03", count: "3" }
+    ]}
+  ],
+  chat: [
+    { time: "오후 6:20", text: "한쩐 어디야? 나 이미 도착했어 ㅠㅠ" },
+    { time: "오후 6:31", text: "한진 바빠?" },
+    { time: "오후 6:42", text: "밖에 바람 엄청 커…추워" },
+    { time: "오후 6:44", text: "한쩐이 제일 좋아하는 커피 사왔어" },
+    { time: "오후 7:00", text: "안 오는 거야? 그럼 나 갈게" },
+    { time: "오후 7:20", text: "십 분만 더 기다려줘^^" },
+    { time: "오후 7:31", text: "답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해 답장해"
+     },
+  ],
+  tweets: [
+    "오늘 밤 한진아랑 오랜만에 해디라오 먹으러 가요🥹 우리 둘만이야, 너무 행복하고 기뻐",
+    "나만 바라봐 주면 안 돼?",
+    "어제 밤 같이 산책 가기로 했잖아? 왜 갑자기 약속 어겼어? 위치랑 휴대폰 확인해봤는데 분명 회사에 있었잖아? 내가 뭘 잘못한 거야? 나 싫어진 거야? 어제 밤 대체 누구랑 있었어? 왜 메시지 답장 안 해?",
+    "나는 그냥 룸메이트일 뿐이지...?",
+    "매일 밤 네 숨소리 들으면서, 이 마음 숨기고 살아",
+    "너를 너무 좋아해서 견디기 힘들어. 겉으로는 아무렇지 않은 척하지만, 부계정에만 이런 마음 써내려가",
+    "같은 방 쓰는 게 행복하면서도 제일 괴로워",
+    "너의 모든 걸 내가 먼저 봤어. 다른 사람한테는 주기 싫어",
+    "그 포옹은 카메라를 위한 연기가 아니야…",
+    "우리 초청장 몰래 나란히 놓고 사진 찍어서 인스타에 올렸어.아무도 이 사진 속에 숨겨진 마음을 눈치 못 채겠지…",
+    "파리 같이 가게 됐어.에펠탑 아래, 사람들 다 지나가는 그 자리에서 너랑 키스할 수 있으면 좋겠어…",
+    "룸메 이상의 마음을 품으면 안 되는데",
+    "형한테 키스하고 싶어..",
+    "그 사람들이 자꾸 형 주변을 맴도는 게 싫어",
+    "오직 나한테만 잘해줬으면 좋겠어",
+    "형이 고양이처럼 얌전하고 애교 부려",
+    "형이 나한테만 애교 부려줬으면",
+    "장난스럽게 다가오다가도 금방 물러나는 모습. 고양이 같아서 더 마음이 끌린다",
+    "그런 모습을 다른 사람이 보면 안 돼",
+    "분명 내가 형의 모든 걸 가장 잘 아는 사람인데",
+    "형의 숨겨진 모습까지 전부 아는 건 분명 나뿐인데, 왜 다른 사람들이 다가오는 거야",
+    "나도 한국어랑 춤 가르쳐 줄 수 있는데, 형은 왜 다른 사람한테 물어보는 거야",
+    "형이 가을 첫 고구마 구워줬어>_<",
+    "형이랑 자유롭게 이야기 나누고 싶어서 중국어를 배우고 있어..",
+    "또 동생이라고 불러.. 짜증 나",
+    "형 오늘 향기 좋아.. 다른 사람이 맡으면 안 돼",
+    "다들 형 귀엽다고 하면 안 돼. 내가 먼저 그렇게 생각했어..!",
+    "보고 싶다고 말하기 싫어. 초라해 보일 것 같아",
+    "보고 싶어. 헤어진 지 십 분밖에 안 됐는데",
+    "형이 다른 사람한테 베이비라고 부르는 거 싫어",
+    "그냥 제일 특별한 사람이고 싶어",
+    "형이 요즘 내가 너무 달라붙는다고 해서 잠시 혼자 쉬라고 했어. 나 진짜 참고 스무 분 동안 혼자 있었어, 먼저 연락도 안 했어. 그런데 형은 나를 찾아오지 않네. 뭐야…… 벌써 스무한 분 지났어. 언제 달래주러 와?",
+    "형이 놀러 가는 거 싫어",
+    "韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振韩振",
+    "형에게 제일 소중한 동생은 하나밖에 없어야 하잖아",
+    "韩振 想你 중국어로 이렇게 말하는 거야...? ",
+    "잘 때마다 덥다고 해서 안기는 걸 거부해. 어젯밤에도 내 팔을 밀어냈어. 조금 참고 있다가 다시 끌어안았는데, 형은 귀찮다고 투덜대면서 더는 움직이지 않았어. 아침에 눈 떴을 때는 형이 내 품에 쏙 들어와 있었어. 대체 누가 더 달라붙는 거야",
+    "형이 오늘 다른 사람 잘생겼다고 했어",
+    "그럼 달래주지 마",
+    "형은 왜 또 답장 안 해",
+    "조금만 정신 차려",
+    "형 얼굴을 생각하며 자위했어.이렇게 해도 될까…"
+
+
+
+
+
+    
+  ],
+  twitterHandle: "고양이 키우는 초보"
+};
+// ========================================================================
+const $ = s => document.querySelector(s);
+const lockscreen=$("#lockscreen"), home=$("#home"), appview=$("#appview"), wallpaper=$("#wallpaper");
+let currentApp="", chatWith="", previousKakao="friends", touchStartY=0, toastTimer;
+const appState={playing:false,photoCount:9};
+function setWallpaper(){
+  if(CONFIG.wallpaper && CONFIG.wallpaper.trim()) wallpaper.style.backgroundImage=`url("${CONFIG.wallpaper.replace(/"/g,'%22')}")`;
+  else wallpaper.style.backgroundImage="radial-gradient(ellipse at 25% 18%,#8fa8b9 0,transparent 40%),radial-gradient(ellipse at 85% 45%,#d2b7b1 0,transparent 37%),linear-gradient(145deg,#6f899d,#b8c9cc 45%,#c6a9a8)";
+}
+function updateClock(){
+ const d=new Date();
+ $("#lockTime").textContent=d.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:false});
+ $("#lockDate").textContent=d.toLocaleDateString("ko-KR",{month:"long",day:"numeric",weekday:"long"});
+}
+function unlock(){lockscreen.style.transform="translateY(-100%)";lockscreen.style.opacity="0";setTimeout(()=>{lockscreen.style.display="none";home.style.display="block";},260)}
+function showToast(t){const el=$("#toast");el.textContent=t;el.style.display="block";clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display="none",1600)}
+function icon(cls,txt){return `<div class="app-icon ${cls}">${txt}</div>`}
+const apps=[
+ ["전화","phone","☎","전화",true],["KakaoTalk","kakao","●","카카오톡",true],["Twitter","twitter","𝕏","Twitter",true],["YouTube","youtube","▶","YouTube",false],
+ ["Spotify","spotify","≋","Spotify",false],["Instagram","instagram","◎","Instagram",false],["사진","photos","✿","사진",false],["메모","notes","▤","메모",false],
+ ["지도","maps","➤","지도",false],["설정","settings","⚙","설정",false]
+];
+function renderHome(){
+ const w=CONFIG.weather||{};$("#weatherPlace").textContent=w.place||"위치";$("#weatherTemp").textContent=w.temp||"—";$("#weatherDesc").textContent=w.desc||"날씨 정보";$("#weatherHilo").textContent=`최고 ${w.high||"—"} · 최저 ${w.low||"—"}`;
+ const desc=(w.desc||"").toLowerCase();$("#weatherIcon").textContent=/비|rain/.test(desc)?"🌧️":/눈|snow/.test(desc)?"❄️":/흐림|구름|cloud/.test(desc)?"☁️":"☀️";
+ const events=(CONFIG.events||[]).slice(0,2);$("#eventsList").innerHTML=events.map(e=>`<div class="event"><span class="event-time">${esc(e.time)}</span><span class="event-title">${esc(e.title)}</span></div>`).join("")||'<div class="event">일정이 없습니다</div>';
+ $("#appGrid").innerHTML=apps.map(a=>`<button class="app" data-app="${a[1]}">${icon(a[1]+"-icon",a[2])}<span class="app-name">${a[0]}</span></button>`).join("");
+ $("#dock").innerHTML=[apps[0],apps[1],["메시지","message","●","메시지",false],["카메라","camera","◉","카메라",false]].map(a=>`<button class="app" data-app="${a[1]}">${icon(a[1]+"-icon",a[2])}</button>`).join("");
+ document.querySelectorAll("[data-app]").forEach(b=>b.addEventListener("click",()=>openApp(b.dataset.app)));
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function shell(title,body,cls="",right=""){return `<div class="${cls}"><div class="app-header"><button class="header-action" onclick="goHome()">‹</button><div>${title}</div><button class="header-action">${right}</button></div><div class="app-content">${body}</div></div><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div>`}
+function openApp(name){
+ currentApp=name;appview.style.display="block";
+ if(name==="phone") renderPhone();
+ if(name==="kakao") renderKakao();
+ if(name==="twitter") renderTwitter();
+ if(name==="youtube") renderYouTube();
+ if(name==="spotify") renderSpotify();
+ if(name==="instagram") renderInstagram();
+ if(name==="photos") renderPhotos();
+ if(name==="notes") renderNotes();
+ if(name==="maps") renderMaps();
+ if(name==="settings") renderSettings();
+ if(name==="message") renderMessages();
+ if(name==="camera") renderCamera();
+}
+function goHome(){appview.style.display="none";appview.innerHTML="";currentApp="";chatWith=""}
+function renderPhone(){
+ let body=(CONFIG.calls||[]).map(g=>`<div class="call-group-title">${esc(g.group)}</div>`+(g.items||[]).map(i=>`<div class="call-row"><div class="avatar">${i.type==="미수신"?"☎":"🐰"}</div><div class="call-info"><div class="call-name ${i.type==="미수신"?"missed":""}">${esc(CONFIG.contactName||"알 수 없음")}${i.count&&i.count!=="1"?` (${esc(i.count)})`:""}</div><div class="call-sub">${i.type==="미수신"?"미수신 전화":i.type==="발"?"발신 전화":"수신 전화"} · 📱</div></div><div class="call-time">${esc(i.time)}</div><button style="background:none;color:#1684ff;font-size:19px">ⓘ</button></div>`).join("")).join("");
+ appview.innerHTML=`<div class="phone-screen" style="height:100%;position:relative"><div class="app-header"><div class="phone-title">최근 통화</div><button class="header-action">편집</button></div><div class="app-content" style="height:calc(100% - 160px)">${body||'<div style="padding:25px;color:#888">통화 기록이 없습니다.</div>'}</div><div class="call-tabs">${[["☆","즐겨찾기"],["◷","최근 통화"],["▦","연락처"],["⌨","키패드"]].map((t,i)=>`<button class="call-tab ${i===1?"active":""}" onclick="showToast('${t[1]}')"><span>${t[0]}</span>${t[1]}</button>`).join("")}</div><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function renderKakao(){
+ const me=esc(CONFIG.userName||"나"), friend=esc(CONFIG.contactName||"친구");
+ appview.innerHTML=`<div class="kakao-screen" style="height:100%;position:relative"><div class="app-header"><button class="header-action" onclick="goHome()">‹</button><div class="kakao-title">친구</div><div style="display:flex;gap:14px;color:#333">⌕　⚙</div></div><div class="app-content" style="height:calc(100% - 96px)"><div class="kakao-section">내 프로필</div><button class="friend-row" style="width:100%" onclick="renderMyProfile()"><div class="friend-avatar">🐥</div><div><div class="friend-name">${me}</div><div class="friend-status">CaTvT</div></div></button><div class="kakao-divider"></div><div class="kakao-section">친구 1</div><button class="friend-row" style="width:100%" onclick="openChat()"><div class="friend-avatar">🐰</div><div style="flex:1"><div class="friend-name">${friend}</div><div class="friend-status">한진아 어디야? 나 이미 도착했어 ㅠㅠ</div></div><span style="color:#bbb">›</span></button></div><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function renderMyProfile(){
+ const me=esc(CONFIG.userName||"나");
+ appview.innerHTML=`<div class="profile-screen"><div class="profile-cover"><button class="profile-back" onclick="renderKakao()">‹</button></div><div class="profile-details"><div class="profile-big-avatar">🐥</div><div class="profile-name">${me}</div><div class="profile-id">카카오톡 사용자</div><div class="profile-status">고양이 좋아해</div><button class="profile-edit" onclick="showToast('프로필 편집')">프로필 편집</button></div><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function openChat(){
+ chatWith=CONFIG.contactName||"친구";
+ const msgs=(CONFIG.chat||[]).map(m=>`<div class="chat-line"><span class="unread">1</span><span class="chat-time">${esc(m.time)}</span><div class="bubble">${esc(m.text)}</div></div>`).join("");
+ appview.innerHTML=`<div class="chat-screen"><div class="chat-top"><button onclick="renderKakao()">‹</button><div class="chat-top-name">${esc(chatWith)}</div><span>⌕　☰</span></div><div class="chat-messages" id="chatMessages"><div class="date-pill">오늘</div>${msgs}</div><form class="chat-compose" id="chatForm"><button type="button" style="background:none;font-size:22px;color:#888">＋</button><input id="chatInput" placeholder="메시지를 입력하세요" autocomplete="off"/><button class="send-btn" type="submit">전송</button></form><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+ $("#chatForm").addEventListener("submit",e=>{e.preventDefault();const input=$("#chatInput"),v=input.value.trim();if(!v)return;const now=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",hour12:true});const line=document.createElement("div");line.className="chat-line";line.innerHTML=`<span class="unread"></span><span class="chat-time">${esc(now)}</span><div class="bubble">${esc(v)}</div>`;$("#chatMessages").appendChild(line);input.value="";$("#chatMessages").scrollTop=$("#chatMessages").scrollHeight;});
+}
+function renderTwitter(){
+ const me=esc(CONFIG.userName||"사용자"),handle=esc(CONFIG.twitterHandle||"private_user");
+ const tweets=(CONFIG.tweets||[]).map((t,i)=>`<article class="tweet"><div class="tweet-avatar">🐥</div><div class="tweet-body"><div class="tweet-meta"><b>${me}</b> <span>🔒 @${handle} · ${i===0?"10월 21일":"10월 20일"}</span></div><div class="tweet-text">${esc(t)}</div><div class="tweet-actions"><span>♡ ${[12,8,5][i%3]}</span><span>▢ ${[2,1,0][i%3]}</span><span>↻ ${[3,1,2][i%3]}</span><span>⇧</span></div></div></article>`).join("");
+ appview.innerHTML=`<div class="twitter-screen" style="height:100%;position:relative"><div class="app-header"><button class="header-action" onclick="goHome()" style="color:white">‹</button><div style="flex:1;text-align:left;padding-left:8px"><div>${me} 🔒</div><div style="font-size:11px;color:#71767b;font-weight:400">${(CONFIG.tweets||[]).length} 게시물</div></div><span>⌕</span></div><div class="app-content"><div class="twitter-backdrop"></div><div class="twitter-profile"><button class="twitter-follow" onclick="showToast('비공개 계정입니다')">팔로우</button><div class="twitter-avatar">🐥</div><div class="twitter-name">${me} <span class="private-tag">🔒</span></div><div class="twitter-handle">@${handle}</div><div class="twitter-bio">고양이는 장난쳐도 너무 귀여워<br/></div><div class="twitter-stats"><span><b>42</b> 팔로잉</span><span><b>64</b> 팔로워</span></div></div><div style="padding:13px 15px;border-bottom:1px solid #2f3336;font-size:14px;font-weight:700">게시물</div>${tweets||'<div style="padding:20px;color:#777">게시물이 없습니다.</div>'}</div><div class="tabbar" style="background:#000"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function renderYouTube(){
+ const videos=[["형이랑 보고 싶은 영상 모음","12:35","🎬"],["연습 영상","45:10","💪🏻"],["배울 춤","08:24","📝"]];
+ const body=videos.map(v=>`<button class="card row" style="width:100%;text-align:left" onclick="showToast('${v[0]} 재생 중')"><div class="thumb">${v[2]}<small style="position:absolute"></small></div><div class="grow"><b>${v[0]}</b><div class="muted">추천 동영상 · ${v[1]}</div></div></button>`).join("");
+ appview.innerHTML=shell("YouTube",`<div class="simple-list">${body}</div>`,"simple-screen","⌕");
+}
+function renderSpotify(){
+ appview.innerHTML=shell("Spotify",`<div class="music-cover">♫</div><div style="padding:0 28px"><h2 style="margin:0">형이랑 듣는 노래♡</h2><div class="muted">Phonecert · 2026</div><div class="music-controls"><button class="round-action" onclick="showToast('이전 곡')">◀</button><button class="round-action" id="playButton" onclick="toggleMusic()">${appState.playing?"Ⅱ":"▶"}</button><button class="round-action" onclick="showToast('다음 곡')">▶</button></div></div>`,"simple-screen dark","⋯");
+}
+function toggleMusic(){appState.playing=!appState.playing;const b=$("#playButton");if(b)b.textContent=appState.playing?"Ⅱ":"▶";showToast(appState.playing?"재생 중":"일시 정지")}
+function renderInstagram(){
+ appview.innerHTML=shell("Instagram",`<div class="card" style="border-radius:0;margin:0;padding:12px"><b>${esc(CONFIG.userName)}</b><div class="muted">Seoul</div></div><div class="social-photo">🍠</div><div style="padding:14px"><button id="likeButton" onclick="this.textContent=this.textContent==='♡'?'♥':'♡';this.style.color=this.textContent==='♥'?'#e1306c':'#111'" style="background:none;font-size:26px">♡</button>　<span>💬　⌁</span><p><b>${esc(CONFIG.userName)}</b>🍠올해 첫 군고구마 </p></div>`,"simple-screen","＋");
+}
+function renderPhotos(){
+ const icons=["🌸","🌃","🐱","☕","🌊","🎡","🌿","🍰","🌙","📷","✨","🌈"].slice(0,appState.photoCount);
+ appview.innerHTML=shell("사진",`<div style="padding:12px 14px 6px"><b>최근 항목</b><div class="muted">${icons.length}장의 사진</div></div><div class="photo-grid">${icons.map((x,i)=>`<button class="phohonecertto-tile" onclick="showToast('${i+1}번째 사진')">${x}</button>`).join("")}</div>`,"simple-screen","선택");
+}
+function renderNotes(){
+ const saved=localStorage.getItem("phone-note")||"♡형이랑 파리에서 하고 싶은 100가지\n\n• 형이랑 에펠탑 아래에서 키스하기\n• 형 손 잡고 센 강 산책하기\n• 형이랑 예쁜 카페 가기\n• 형이랑 루브르 박물관 앞에서 커플 사진 찍기\n• 형 손을 내 외투 주머니에 넣어주기";
+ appview.innerHTML=shell("메모",`<div style="padding:14px"><textarea class="note-editor" id="noteText">${esc(saved)}</textarea><button onclick="saveNote()" style="margin-top:12px;background:#ffd60a;border-radius:12px;padding:10px 18px;font-weight:700">저장</button></div>`,"simple-screen","＋");
+}
+function saveNote(){localStorage.setItem("phone-note",$("#noteText").value);showToast("메모를 저장했어요")}
+function renderMaps(){
+ appview.innerHTML=`<div class="simple-screen"><div class="app-header"><button class="header-action" onclick="goHome()">‹</button><div>지도</div><button class="header-action" onclick="showToast('현재 위치')">◎</button></div><div class="app-content" style="padding:0"><div class="map-canvas"><div class="map-pin">📍</div><div class="card" style="position:absolute;left:14px;right:14px;bottom:18px"><b>서울</b><div class="muted">도착 예정 시간과 경로를 확인하세요</div><button onclick="showToast('경로 안내를 시작합니다')" style="margin-top:10px;background:#087cff;color:#fff;border-radius:10px;padding:9px 14px">경로</button></div></div></div><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function renderSettings(){
+ const rows=[["✈","에어플레인 모드",false],["⌁","Wi-Fi",true],["ᛒ","Bluetooth",true],["☾","집중 모드",false],["🔔","알림",true]];
+ appview.innerHTML=shell("설정",`<div class="settings-group"><div class="setting-row"><div class="setting-icon" style="background:#aaa">👤</div><div class="grow"><b>${esc(CONFIG.userName)}</b><div class="muted">Apple 계정, iCloud 및 미디어</div></div><span>›</span></div></div><div class="settings-group">${rows.map((r,i)=>`<button class="setting-row" style="width:100%;background:#fff;text-align:left" onclick="toggleSetting(this)"><div class="setting-icon">${r[0]}</div><div class="grow">${r[1]}</div><span class="switch ${r[2]?"on":""}"></span></button>`).join("")}</div><div class="settings-group"><button class="setting-row" style="width:100%;background:#fff"><div class="setting-icon" style="background:#777">⚙</div><div class="grow">일반</div><span>›</span></button><button class="setting-row" style="width:100%;background:#fff"><div class="setting-icon" style="background:#5ac8fa">◉</div><div class="grow">배경화면</div><span>›</span></button></div>`,"simple-screen","");
+}
+function toggleSetting(row){row.querySelector(".switch").classList.toggle("on")}
+function renderMessages(){
+ const saved=JSON.parse(localStorage.getItem("phone-messages")||"[]");
+ const bubbles=["오늘 저녁에 만날까?",...saved];
+ appview.innerHTML=`<div class="simple-screen" style="height:100%"><div class="app-header"><button class="header-action" onclick="goHome()">‹</button><div>${esc(CONFIG.contactName)}</div><span>ⓘ</span></div><div id="messageList" class="app-content" style="height:calc(100% - 116px);padding-top:10px">${bubbles.map((m,i)=>`<div class="message-bubble ${i?"mine":""}">${esc(m)}</div>`).join("")}</div><form id="messageForm" class="chat-compose"><input id="messageInput" placeholder="iMessage"/><button class="send-btn">↑</button></form><div class="tabbar"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+ $("#messageForm").addEventListener("submit",e=>{e.preventDefault();const i=$("#messageInput"),v=i.value.trim();if(!v)return;saved.push(v);localStorage.setItem("phone-messages",JSON.stringify(saved));renderMessages()});
+}
+function renderCamera(){
+ appview.innerHTML=`<div class="camera-screen"><div class="app-header" style="background:#050505;color:#fff"><button class="header-action" onclick="goHome()">‹</button><div>사진</div><button class="header-action" onclick="showToast('플래시')">⚡</button></div><div class="viewfinder" id="viewfinder">📷</div><div class="camera-controls"><button onclick="renderPhotos()" style="background:#333;color:#fff;border-radius:9px;width:46px;height:46px">▦</button><button class="shutter" onclick="takePhoto()"></button><button onclick="showToast('카메라 전환')" style="background:#333;color:#fff;border-radius:50%;width:46px;height:46px">↻</button></div><div class="tabbar" style="background:#050505"><div class="home-indicator" onclick="goHome()"></div></div></div>`;
+}
+function takePhoto(){appState.photoCount=Math.min(12,appState.photoCount+1);const v=$("#viewfinder");v.style.filter="brightness(3)";setTimeout(()=>v.style.filter="",120);showToast("사진을 찍었어요")}
+setWallpaper();updateClock();setInterval(updateClock,1000);renderHome();
+$("#globalHome").addEventListener("click",()=>{if(lockscreen.style.display!=="none"){unlock()}else goHome()});
+lockscreen.addEventListener("touchstart",e=>touchStartY=e.touches[0].clientY,{passive:true});
+lockscreen.addEventListener("touchend",e=>{if(touchStartY-e.changedTouches[0].clientY>30)unlock()},{passive:true});
+lockscreen.addEventListener("mousedown",e=>touchStartY=e.clientY);
+lockscreen.addEventListener("mouseup",e=>{if(touchStartY-e.clientY>30)unlock()});
+lockscreen.addEventListener("click",e=>{if(e.target.classList.contains("lock-circle"))return;unlock()});
+let dragStart=null;
+document.addEventListener("touchstart",e=>{if(e.target.closest("#appview")||e.target.closest("#home"))return;dragStart=e.touches[0].clientY},{passive:true});
+</script>
+</body>
+</html>
